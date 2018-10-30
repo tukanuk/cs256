@@ -1,0 +1,10 @@
+#!/bin/bash
+trap '
+{
+ echo "CTRL-C by user, bye bye :)"
+ exit 1
+}' INT
+while : ;do
+ echo "Infinite loop!!!!"
+sleep 5 
+done
