@@ -6,7 +6,7 @@ int main (int argc, char *argv[])
 {
     int pid = fork();
     
-    if (pid == 0)b
+    if (pid == 0)
     {
         printf("I'm child one\n");
         printf("My PID is: %d\n", getpid());
