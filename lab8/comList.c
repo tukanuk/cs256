@@ -1,11 +1,17 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
+int buildCommand (char *com, char *comArgcv[10]);   
 
 int main (int argc, char * argv[])
 {
     char * parse[20];
     char * input = argv[1];
+    int status;
     printf("INPUT: %s\n", input);
+
 
     int i=0; // counter
     parse[i] = strtok(input, ";");
@@ -20,13 +26,52 @@ int main (int argc, char * argv[])
     i=0;
     while (parse[i] )
     {
-        printf("%d command: %s\n", i, parse[i]);
+        printf("Command %d: %s\n", i, parse[i]);
         i++;
 
     }
     
-    // printf("Second command: %s\n", parse[1]);
+    char *com1 = parse[0];
+    char *com2 = parse[1];
+
+    char* comArgv[10];
+
+    printf("First Command is made up of:\n");
+    buildCommand(com1, comArgv);
+    
+    if (!fork() )
+    {
+        execvp(comArgv[0], comArgv);
+        exit(0);
+    }
+    
+    wait(&status);
+    printf("Second Command is made up of:\n");
+    buildCommand(com2, comArgv);
+    if (!fork() )
+    {
+        execvp(comArgv[0], comArgv);
+        exit(0);
+    }
+
+    wait(&status);
+
 }
+
+int buildCommand (char *com, char *comArgv[10])
+{
+    int i=0;
+    
+    comArgv[i] = strtok(com, " ");
+    printf("-> %s\n", comArgv[i]);
+    while (comArgv[i])
+    {
+        i++;
+        comArgv[i] = strtok(NULL, " ");
+        printf("%s\n", comArgv[i]);
+    }
+    return 0;
+}   
 
 
 /* parseString
