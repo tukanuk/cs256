@@ -7,37 +7,42 @@
 #include <string.h>
 
 int main(int argc, char *argv[])
-{ //E.g., 1, server
-    char *myTime;
-    time_t currentUnixTime; // time.h
-    int sd, client, portNumber;
+{
+    char message[100];
+    int server, portNumber;
     socklen_t len;
     struct sockaddr_in servAdd;
-    if (argc != 2)
+    if (argc != 3)
     {
-        fprintf(stderr, "Call model: %s <Port#>\n", argv[0]);
+        printf("Call model:%s <IP> <Port#>\n", argv[0]);
         exit(0);
     }
-    if ((sd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    if ((server = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
-        fprintf(stderr, "Could not create socket\n");
+        fprintf(stderr, "Cannot create socket\n");
         exit(1);
     }
     servAdd.sin_family = AF_INET;
-    servAdd.sin_addr.s_addr = INADDR_ANY;
-    sscanf(argv[1], "%d", &portNumber);
+    sscanf(argv[2], "%d", &portNumber);
     servAdd.sin_port = portNumber;
-    bind(sd, (struct sockaddr *)&servAdd,
-         sizeof(servAdd));
-    listen(sd, 5);
-    while (1)
+
+    if (inet_pton(AF_INET, argv[1],
+                  &servAdd.sin_addr) < 0)
     {
-        client = accept(sd, (struct sockaddr *)NULL, NULL);
-        printf("Got a date/time request\n");
-        currentUnixTime = time(NULL);
-        myTime = ctime(&currentUnixTime);
-        write(client, myTime, strlen(myTime) + 1);
-        close(client);
-        printf("Date and Time sent\n");
+        fprintf(stderr, " inet_pton() has failed\n");
+        exit(2);
     }
+    if (connect(server, (struct sockaddr *)&servAdd,
+                sizeof(servAdd)) < 0)
+    {
+        fprintf(stderr, "connect() failed, exiting\n");
+        exit(3);
+    }
+    if (read(server, message, 100) < 0)
+    {
+        fprintf(stderr, "read() error\n");
+        exit(3);
+    }
+    fprintf(stderr, "%s\n", message);
+    exit(0);
 }
