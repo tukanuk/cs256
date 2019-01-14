@@ -3,27 +3,27 @@
 #include <unistd.h>
 #include <signal.h>
 
-void TTIN_handler()
-{
-    printf("Attempted to read from keyboard\n");
-    exit(22);
-}
+void myAlarmHandler(){}; // to avoid quiting
 int main(int argc, char *argv[])
 {
-    int i, status, pid;
-    if (!(pid = fork()))
+    pid_t pid;
+    if ((pid = fork()) > 0)
     {
-        signal(SIGTTIN, TTIN_handler);
-        setpgid(0, getpid());
-        printf("Enter a value> \n");
-        scanf("%d", &i);
+        printf("My child should wait until I am done\n");
+        sleep(4);
+        printf("Child, now you can do your job\n");
+        kill(pid, SIGALRM); // let the child wake up
+        sleep(3);
+        printf("Parent Exiting\n");
     }
     else
     {
-        wait(&status);
-        if (WIFEXITED(status))
-            printf("Exit status=%d\n", WEXITSTATUS(status));
-        else
-            printf("signaled by =%d\n", WTERMSIG(status));
+        printf("I have to wait for my parent\n");
+        signal(SIGALRM, myAlarmHandler);
+        pause();
+        printf("OK, now I can do my job\n");
+        sleep(2);
+        printf("Child Exiting\n");
     }
+    exit(0);
 }
